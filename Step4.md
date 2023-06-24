@@ -166,18 +166,33 @@ amcl节点是不可以单独运行的，运行 amcl 节点之前，需要先加�
 
 3.3执行
 
-1.先启动 Gazebo 仿真环境(此过程略)；
+1.在命令行运行bringup.launch和lidar.launch
 
-2.启动键盘控制节点：
+2.在命令行运行amcl.launch：
+```
+roslaunch tianbot_mini amcl.launch
+```
 
-rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+![2023-06-24 15-53-16 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/9c4610f4-e0b6-47c8-ba06-1290734d7e42)
 
-3.启动上一步中集成地图服务、amcl 与 rviz 的 launch 文件；
 
-4.在启动的 rviz 中，添加RobotModel、Map组件，分别显示机器人模型与地图，添加 posearray 插件，设置topic为particlecloud来显示 amcl 预估的当前机器人的位姿，箭头越是密集，说明当前机器人处于此位置的概率越高；
+运行成功后进入rviz的主界面，并能够显示地图:
 
-5.通过键盘控制机器人运动，会发现 posearray 也随之而改变。
-![图片](https://github.com/fqy2333/robot-ws/assets/57582782/e1cc349d-41c7-4770-be4b-8977c5b50ecf)
+![2023-06-24 15-50-07 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/9686cf81-3646-4731-b324-a792af80782d)
+
+3.此时可以看到小车并没有在正确的位置，需要通过选择菜单栏的"2D Pose Estimate"来为小车指定大概的位置，指定后效果如下图所示：
+
+![2023-06-24 15-50-42 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/76b00cde-5a8d-4b08-bce6-e09ec9157837)
+
+> 所指定位置无需十分精确，在小车运行过程中系统会利用蒙特卡洛算法实时估算小车的位置和姿态。
+
+更新效果如下：
+
+![2023-06-24 15-50-52 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/8715a319-c1df-4fef-a656-3b943e7fb713)
+
+
+![2023-06-24 15-50-55 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/b85546be-0a1a-45ff-a45c-aafb5798b114)
+
 
 ## 2. 路径规划
 
@@ -449,13 +464,11 @@ TrajectoryPlannerROS:
 
 </launch>
 
-4.4 测试
+4.4 执行
 
-1.先启动 Gazebo 仿真环境(此过程略)；
+1.启动上节中的 launch 文件；
 
-2.启动导航相关的 launch 文件；
-
-3.添加Rviz组件(参考演示结果),可以将配置数据保存，后期直接调用；
+2.添加Rviz组件(参考演示结果),可以将配置数据保存，后期直接调用；
 
 全局代价地图与本地代价地图组件配置如下:
 ![图片](https://github.com/fqy2333/robot-ws/assets/57582782/66150ee8-001e-46ce-bd01-67e9a491c492)
@@ -463,42 +476,15 @@ TrajectoryPlannerROS:
 全局路径规划与本地路径规划组件配置如下:
 ![图片](https://github.com/fqy2333/robot-ws/assets/57582782/1f46fcd2-54d9-49f7-9edc-cbdd590239c1)
 
-4.通过Rviz工具栏的 2D Nav Goal设置目的地实现导航。
-![图片](https://github.com/fqy2333/robot-ws/assets/57582782/63fe9c89-1b33-4652-b24f-1fe0af47f73e)
+4.通过选中Rviz工具栏的"2D Nav Goal"设置目的地实现导航。
+![2023-06-24 15-51-06 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/1efd78d4-0fe5-462a-af26-af4515ef74c8)
 
 5.也可以在导航过程中，添加新的障碍物，机器人也可以自动躲避障碍物。
 
-## 3. 导航与SLAM建图-最后
+**成功到达目的地**
 
-上述需求是可行的。虽然可能会有疑问，导航时需要地图信息，之前导航实现时，是通过 map_server 包的 map_server 节点来发布地图信息的，如果不先通过SLAM建图，那么如何发布地图信息呢？SLAM建图过程中本身就会时时发布地图信息，所以无需再使用map_server，SLAM已经发布了话题为 /map 的地图消息了，且导航需要定位模块，SLAM本身也是可以实现定位的。
+![2023-06-24 15-51-42 的屏幕截图](https://github.com/MingkaiSheng/robot-ws/assets/41623939/534498da-583c-4d8e-b534-4facc3f6d2c5)
 
-该过程实现比较简单，步骤如下:
+**实际效果**
 
-    编写launch文件，集成SLAM与move_base相关节点；
-    执行launch文件并测试。
-
-1.编写launc文件
-
-当前launch文件实现，无需调用map_server的相关节点，只需要启动SLAM节点与move_base节点，示例内容如下:
-
-<launch>
-    <!-- 启动SLAM节点 -->
-    <include file="$(find mycar_nav)/launch/slam.launch" />
-    <!-- 运行move_base节点 -->
-    <include file="$(find mycar_nav)/launch/path.launch" />
-    <!-- 运行rviz -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find mycar_nav)/rviz/nav.rviz" />
-</launch>
-
-2.测试
-
-1.首先运行gazebo仿真环境；
-
-2.然后执行launch文件；
-
-3.在rviz中通过2D Nav Goal设置目标点，机器人开始自主移动并建图了；
-
-4.最后可以使用 map_server 保存地图。
-![图片](https://github.com/fqy2333/robot-ws/assets/57582782/9f5162cc-54b2-4812-97fa-128cecdf00ad)
-
-
+![IMG_20230624_155227](https://github.com/MingkaiSheng/robot-ws/assets/41623939/f2dad7f0-9ac0-4924-b1a8-0fe183f4902b)
