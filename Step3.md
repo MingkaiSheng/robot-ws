@@ -1,6 +1,83 @@
 # 激光雷达密封环境的地图的构建与对比
 
-## 1. 激光雷达构建环境地图
+## 1. SLAM建图
+- 1. gmapping简介
+
+gmapping 是ROS开源社区中较为常用且比较成熟的SLAM算法之一，gmapping可以根据移动机器人里程计数据和激光雷达数据来绘制二维的栅格地图，对应的，gmapping对硬件也有一定的要求：
+
+a.该移动机器人可以发布里程计消息
+b.机器人需要发布雷达消息(该消息可以通过水平固定安装的雷达发布，或者也可以将深度相机消息转换成雷达消息)
+
+关于里程计与雷达数据，仿真环境中可以正常获取的，不再赘述，栅格地图如案例所示。
+
+gmapping 安装前面也有介绍，命令如下:
+```
+sudo apt install ros-<ROS版本>-gmapping
+```
+
+- 2. gmapping节点说明
+     
+gmapping 功能包中的核心节点是:slam_gmapping。为了方便调用，需要先了解该节点订阅的话题、发布的话题、服务以及相关参数。
+
+- 2.1订阅的Topic
+  
+tf (tf/tfMessage)
+
+    用于雷达、底盘与里程计之间的坐标变换消息。
+  
+scan(sensor_msgs/LaserScan)
+
+    SLAM所需的雷达信息。
+    
+- 2.2发布的Topic
+  
+map_metadata(nav_msgs/MapMetaData)
+
+    地图元数据，包括地图的宽度、高度、分辨率等，该消息会固定更新。
+    
+map(nav_msgs/OccupancyGrid)
+
+    地图栅格数据，一般会在rviz中以图形化的方式显示。
+    
+~entropy(std_msgs/Float64)
+
+    机器人姿态分布熵估计(值越大，不确定性越大)。
+    
+- 2.3服务
+  
+dynamic_map(nav_msgs/GetMap)
+
+    用于获取地图数据。
+    
+- 2.4参数
+
+~base_frame(string, default:"base_link")
+
+    机器人基坐标系。
+  
+~map_frame(string, default:"map")
+
+    地图坐标系。
+    
+~odom_frame(string, default:"odom")
+
+    里程计坐标系。
+    
+~map_update_interval(float, default: 5.0)
+
+    地图更新频率，根据指定的值设计更新间隔。
+    
+~maxUrange(float, default: 80.0)
+
+    激光探测的最大可用范围(超出此阈值，被截断)。
+    
+~maxRange(float)
+
+    激光探测的最大范围。
+    
+参数较多，上述是几个较为常用的参数，其他参数介绍可参考官网。
+
+## 2. 激光雷达构建环境地图
 - 1. 激光雷达接收器连接电脑上
   
 
