@@ -9,37 +9,30 @@
 ```
 ls /dev/ttyUSB*
 ```
+![image](https://github.com/cztianchao/robot-ws/assets/41623939/fc576ab6-aa23-4240-b9bc-4403407e0db4)
 
-![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/1.png)
 - 3. 启动ROS雷达驱动：
 ```
 roslaunch tianbot_mini lidar.launch
 ```
+![image](https://github.com/cztianchao/robot-ws/assets/41623939/19dcadf6-ab7c-4735-aeee-2a858107faf0)
 
-![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/2.png)
+
+
 - 4. 若采样率 >=4k ,方为正常，若不大于等于4k：ctrl c 关闭驱动 ，重启即可
   
-  第一次为3k
+  **第一次为3k**
+![image](https://github.com/cztianchao/robot-ws/assets/41623939/5a3455f7-ba60-4e17-ae65-8427708990e3)
+
+  **第二次为5k（可以使用）**
   
-![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/2.png)
+![image](https://github.com/cztianchao/robot-ws/assets/41623939/8ae2e356-b6db-4aac-8b88-2fc75e1dcace)
 
-  第二次为5k（可以使用）
+
+- 5. 运行slam.launch，进行地图采集
+
+  运行成功画面：
   
-![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/3.png)
-
-- 5. 新建终端，输入: rviz 打开可视化工具查看
-
-   ![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/4.png)
- 
-- 6. 打开左下角 add ，在by topic 添加一个话题；选中：/tianbot_mini   /scan  LaserScan
- 
- 
-- 7. 出现报错，在Global Options里的Fixed Frame里添加 tianbot_mini/laser 即可
-
-  ![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/6.png)
-- 8. 在LaserScan 列表的Size参数里，设置0.05使可视化更清晰
- 
-    ![image]( https://github.com/STLIFE97/robot-ws/blob/main/image/7.png)
 
 - 9. 查看现实与扫描地图对比
 
